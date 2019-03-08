@@ -1,4 +1,4 @@
-#include <kernel.h>
+#include "kernel/kernel_impl.h"
 #include <t_syslog.h>
 #include "dmloader.h"
 #include "platform_interface_layer.h"
@@ -92,23 +92,17 @@ void app_ter_btn_alm(intptr_t exinf) {
 #undef LOG_EMERG
 #define LOG_EMERG LOG_ERROR
 
-#if 0 // TODO: support this in HRP3
-static void xlog_sys(void *p_excinf) {
-    syslog(LOG_EMERG, "%s called, not supported", __FUNCTION__); // TODO: for debug
+static void ldr_xlog_sys(void *p_excinf) {
 	static T_RLDM rldm;
 	dmloader_ref_ldm(1, &rldm);
 
-    uint32_t excno      = ((exc_frame_t *)(p_excinf))->excno;
-    uint32_t nest_count = ((exc_frame_t *)(p_excinf))->nest_count;
-    uint32_t ipm        = ((exc_frame_t *)(p_excinf))->ipm;
-    uint32_t r0         = ((exc_frame_t *)(p_excinf))->r0;
-    uint32_t r1         = ((exc_frame_t *)(p_excinf))->r1;
-    uint32_t r2         = ((exc_frame_t *)(p_excinf))->r2;
-    uint32_t r3         = ((exc_frame_t *)(p_excinf))->r3;
-    uint32_t r12        = ((exc_frame_t *)(p_excinf))->r12;
-    uint32_t lr         = ((exc_frame_t *)(p_excinf))->lr;
-    uint32_t pc         = ((exc_frame_t *)(p_excinf))->pc;
-    uint32_t cpsr       = ((exc_frame_t *)(p_excinf))->cpsr;
+    uint32_t r0         = ((T_EXCINF *)(p_excinf))->r0;
+    uint32_t r1         = ((T_EXCINF *)(p_excinf))->r1;
+    uint32_t r2         = ((T_EXCINF *)(p_excinf))->r2;
+    uint32_t r3         = ((T_EXCINF *)(p_excinf))->r3;
+    uint32_t r12        = ((T_EXCINF *)(p_excinf))->r12;
+    uint32_t lr         = ((T_EXCINF *)(p_excinf))->lr;
+    uint32_t pc         = ((T_EXCINF *)(p_excinf))->pc;
 
 	syslog(LOG_EMERG, "Application information:");
 	syslog(LOG_EMERG, "Text segment physical address: 0x%08x, size: %d", (uint32_t)rldm.text_mempool, rldm.text_mempool_size);
@@ -125,56 +119,64 @@ static void xlog_sys(void *p_excinf) {
 	}
 
 	syslog(LOG_EMERG, "Raw exception frame:");
-    syslog(LOG_EMERG, " excno = %d, excpt_nest_count = %d, ipm = 0x%08x ",
-           excno, nest_count, ipm);
-    syslog(LOG_EMERG, " r0 = 0x%08x,  r1 = 0x%08x, r2 = 0x%08x, r3 = 0x%08x ",
-           r0, r1, r2, r3);
-    syslog(LOG_EMERG, " r12 = 0x%08x, lr = 0x%08x, pc = 0x%08x, cpsr = 0x%08x ",
-           r12, lr, pc, cpsr);
+	syslog_4(LOG_EMERG, "pc = %08x, cpsr = %08x, lr = %08x, r12 = %08x",
+			((T_EXCINF *)(p_excinf))->pc, ((T_EXCINF *)(p_excinf))->cpsr,
+			((T_EXCINF *)(p_excinf))->lr, ((T_EXCINF *)(p_excinf))->r12);
+	syslog_4(LOG_EMERG, "r0 = %08x, r1 = %08x, r2 = %08x, r3 = %08x",
+			((T_EXCINF *)(p_excinf))->r0, ((T_EXCINF *)(p_excinf))->r1,
+			((T_EXCINF *)(p_excinf))->r2, ((T_EXCINF *)(p_excinf))->r3);
+	syslog_3(LOG_EMERG, "nest_count = %d, intpri = %d, rundom = %08x",
+			((T_EXCINF *)(p_excinf))->nest_count,
+			((T_EXCINF *)(p_excinf))->intpri,
+			((T_EXCINF *)(p_excinf))->rundom);
 }
-#endif
-
 
 void ldr_prefetch_handler(void *p_excinf) {
-    syslog(LOG_EMERG, "%s called, not supported", __FUNCTION__); // TODO: for debug
-#if 0 // TODO: support this in HRP3
 	syslog(LOG_EMERG, "====================EXCEPTION DETECTED====================");
 	syslog(LOG_EMERG, "Prefetch exception occurs.");
-	xlog_sys(p_excinf);
 
-	ID tid;
-	iget_tid(&tid);
-	if (!xsns_xpn(p_excinf)) {
+    // Print debug information
+#define CP15_READ_IFSR(reg)		Asm("mrc p15, 0, %0, c5, c0, 1":"=r"(reg))
+	uint32_t fsr;
+	CP15_READ_IFSR(fsr);
+    xlog_fsr(fsr, NULL);
+	ldr_xlog_sys(p_excinf);
+
+	ID tid = TSK_NONE;
+	SVC_PERROR(get_tid(&tid));
+
+    if (tid != TSK_NONE) { // TODO: in HRP2, !xsns_xpn(p_excinf) is used.
 		syslog(LOG_EMERG, "Kill task (tid = %d) for recovery.", tid);
-		ER ercd = iras_tex(tid, 1);
-		assert(ercd == E_OK);
+        SVC_PERROR(ter_tsk(tid));
 	} else {
 		syslog(LOG_EMERG, "Fatal error (tid = %d), exit kernel.", tid);
 		ext_ker();
 	}
 	syslog(LOG_EMERG, "==========================================================");
-#endif
 }
 
 void ldr_data_abort_handler(void *p_excinf) {
-    syslog(LOG_EMERG, "%s called, not supported", __FUNCTION__); // TODO: for debug
-#if 0 // TODO: support this in HRP3
 	syslog(LOG_EMERG, "====================EXCEPTION DETECTED====================");
 	syslog(LOG_EMERG, "Data abort exception occurs.");
-	xlog_sys(p_excinf);
 
-	ID tid;
-	iget_tid(&tid);
-	if (!xsns_xpn(p_excinf)) {
+    // Print debug information
+	uint32_t fsr, far;
+	CP15_READ_FSR(fsr);
+	CP15_READ_FAR(far);
+    xlog_fsr(fsr, far);
+	ldr_xlog_sys(p_excinf);
+
+	ID tid = TSK_NONE;
+	SVC_PERROR(get_tid(&tid));
+
+    if (tid != TSK_NONE) { // TODO: in HRP2, !xsns_xpn(p_excinf) is used.
 		syslog(LOG_EMERG, "Kill task (tid = %d) for recovery.", tid);
-		ER ercd = iras_tex(tid, 1);
-		assert(ercd == E_OK);
-	} else {
+        SVC_PERROR(ter_tsk(tid));
+    } else {
 		syslog(LOG_EMERG, "Fatal error (tid = %d), exit kernel.", tid);
 		ext_ker();
-	}
+    }
 	syslog(LOG_EMERG, "==========================================================");
-#endif
 }
 
 #if 0 // legacy code
