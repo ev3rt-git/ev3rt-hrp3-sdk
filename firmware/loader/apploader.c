@@ -10,6 +10,15 @@
 //static bool_t app_loaded = false;
 
 ER load_application(const void *mod_data, uint32_t mod_data_sz) {
+    // TODO: more elegant
+    static bool_t has_inited = false;
+    if (!has_inited) {
+	    static T_RLDM rldm;
+	    dmloader_ref_ldm(1, &rldm);
+        platform_add_segment_information("text", (uintptr_t)rldm.text_mempool, rldm.text_mempool_size);
+        platform_add_segment_information("data", (uintptr_t)rldm.data_mempool, rldm.data_mempool_size);
+    }
+
 	ER ercd;
 
 	// MMCSD must have been acquired by current task
@@ -87,97 +96,6 @@ void app_ter_btn_alm(intptr_t exinf) {
 	ista_alm(APP_TER_BTN_ALM, 10);
 }
 #endif
-
-// Maybe not that critical
-#undef LOG_EMERG
-#define LOG_EMERG LOG_ERROR
-
-static void ldr_xlog_sys(void *p_excinf) {
-	static T_RLDM rldm;
-	dmloader_ref_ldm(1, &rldm);
-
-    uint32_t r0         = ((T_EXCINF *)(p_excinf))->r0;
-    uint32_t r1         = ((T_EXCINF *)(p_excinf))->r1;
-    uint32_t r2         = ((T_EXCINF *)(p_excinf))->r2;
-    uint32_t r3         = ((T_EXCINF *)(p_excinf))->r3;
-    uint32_t r12        = ((T_EXCINF *)(p_excinf))->r12;
-    uint32_t lr         = ((T_EXCINF *)(p_excinf))->lr;
-    uint32_t pc         = ((T_EXCINF *)(p_excinf))->pc;
-
-	syslog(LOG_EMERG, "Application information:");
-	syslog(LOG_EMERG, "Text segment physical address: 0x%08x, size: %d", (uint32_t)rldm.text_mempool, rldm.text_mempool_size);
-	syslog(LOG_EMERG, "Data segment physical address: 0x%08x, size: %d", (uint32_t)rldm.data_mempool, rldm.data_mempool_size);
-
-	static const char *regstr[] = { "r0", "r1", "r2", "r3", "r12", "lr", "pc" };
-	uint32_t           regval[] = {  r0,   r1,   r2,   r3,   r12,   lr,   pc  };
-	syslog(LOG_EMERG, "Registers information:");
-	for (int i = 0; i < sizeof(regval) / sizeof(uint32_t); ++i) {
-		if (regval[i] >= (uint32_t)rldm.text_mempool && regval[i] < (uint32_t)rldm.text_mempool + rldm.text_mempool_size)
-			syslog(LOG_EMERG, "%s = 0x%08x, virtual address: 0x%08x in text segment", regstr[i], regval[i], regval[i] - (uint32_t)rldm.text_mempool);
-		else if (regval[i] >= (uint32_t)rldm.data_mempool && regval[i] < (uint32_t)rldm.data_mempool + rldm.data_mempool_size)
-			syslog(LOG_EMERG, "%s = 0x%08x, virtual address: 0x%08x in data segment", regstr[i], regval[i], regval[i] - (uint32_t)rldm.data_mempool);
-	}
-
-	syslog(LOG_EMERG, "Raw exception frame:");
-	syslog_4(LOG_EMERG, "pc = %08x, cpsr = %08x, lr = %08x, r12 = %08x",
-			((T_EXCINF *)(p_excinf))->pc, ((T_EXCINF *)(p_excinf))->cpsr,
-			((T_EXCINF *)(p_excinf))->lr, ((T_EXCINF *)(p_excinf))->r12);
-	syslog_4(LOG_EMERG, "r0 = %08x, r1 = %08x, r2 = %08x, r3 = %08x",
-			((T_EXCINF *)(p_excinf))->r0, ((T_EXCINF *)(p_excinf))->r1,
-			((T_EXCINF *)(p_excinf))->r2, ((T_EXCINF *)(p_excinf))->r3);
-	syslog_3(LOG_EMERG, "nest_count = %d, intpri = %d, rundom = %08x",
-			((T_EXCINF *)(p_excinf))->nest_count,
-			((T_EXCINF *)(p_excinf))->intpri,
-			((T_EXCINF *)(p_excinf))->rundom);
-}
-
-void ldr_prefetch_handler(void *p_excinf) {
-	syslog(LOG_EMERG, "====================EXCEPTION DETECTED====================");
-	syslog(LOG_EMERG, "Prefetch exception occurs.");
-
-    // Print debug information
-#define CP15_READ_IFSR(reg)		Asm("mrc p15, 0, %0, c5, c0, 1":"=r"(reg))
-	uint32_t fsr;
-	CP15_READ_IFSR(fsr);
-    xlog_fsr(fsr, NULL);
-	ldr_xlog_sys(p_excinf);
-
-	ID tid = TSK_NONE;
-	SVC_PERROR(get_tid(&tid));
-
-    if (tid != TSK_NONE) { // TODO: in HRP2, !xsns_xpn(p_excinf) is used.
-		syslog(LOG_EMERG, "Kill task (tid = %d) for recovery.", tid);
-        SVC_PERROR(ter_tsk(tid));
-	} else {
-		syslog(LOG_EMERG, "Fatal error (tid = %d), exit kernel.", tid);
-		ext_ker();
-	}
-	syslog(LOG_EMERG, "==========================================================");
-}
-
-void ldr_data_abort_handler(void *p_excinf) {
-	syslog(LOG_EMERG, "====================EXCEPTION DETECTED====================");
-	syslog(LOG_EMERG, "Data abort exception occurs.");
-
-    // Print debug information
-	uint32_t fsr, far;
-	CP15_READ_FSR(fsr);
-	CP15_READ_FAR(far);
-    xlog_fsr(fsr, far);
-	ldr_xlog_sys(p_excinf);
-
-	ID tid = TSK_NONE;
-	SVC_PERROR(get_tid(&tid));
-
-    if (tid != TSK_NONE) { // TODO: in HRP2, !xsns_xpn(p_excinf) is used.
-		syslog(LOG_EMERG, "Kill task (tid = %d) for recovery.", tid);
-        SVC_PERROR(ter_tsk(tid));
-    } else {
-		syslog(LOG_EMERG, "Fatal error (tid = %d), exit kernel.", tid);
-		ext_ker();
-    }
-	syslog(LOG_EMERG, "==========================================================");
-}
 
 #if 0 // legacy code
 
