@@ -79,9 +79,7 @@ void connect_motor(intptr_t unused) {
 
 	if(cme_type->exinf == -1) return;
 
-//	fprintf(fio, ">>> %s ==> %s\n", cme_port->title, cme_type->title);
 	ev3_motor_config(cme_port->exinf, cme_type->exinf);
-//	tslp_tsk(500);
 }
 
 
@@ -298,8 +296,6 @@ void test_motor(intptr_t unused) {
 		sprintf(msgbuf, "%s is not connected.", cme_port->title);
 		show_message_box("No Motor", msgbuf);
 		}
-//		fprintf(fio, "%s is not connected.\n", cme_port->title);
-//		tslp_tsk(500);
 		break;
 
 	default:

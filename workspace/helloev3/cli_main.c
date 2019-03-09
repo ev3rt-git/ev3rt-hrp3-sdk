@@ -1,10 +1,3 @@
-/*
- * cli_main.c
- *
- *  Created on: Jun 22, 2014
- *      Author: liyixiao
- */
-
 #include "ev3api.h"
 #include "app.h"
 #include <unistd.h>
@@ -374,16 +367,9 @@ static void test_brick(intptr_t unused) {
 
 static const CliMenuEntry entry_tab[] = {
 	{ .key = '1', .title = "Connect device", .handler = connect_device },
-//	{ .key = '1', .title = "Connect Sensor", .handler = connect_sensor },
-//	{ .key = '2', .title = "Connect Motor", .handler = connect_motor },
 	{ .key = '3', .title = "Test sensor", .handler = test_sensor },
 	{ .key = '4', .title = "Test motor", .handler = test_motor },
 	{ .key = '5', .title = "Test brick", .handler = test_brick },
-//	{ .key = '5', .title = "Test LED", .handler = test_led },
-//	{ .key = '6', .title = "Test Button", .handler = test_button },
-//	{ .key = '7', .title = "Test Speaker", .handler = test_speaker },
-//	{ .key = '8', .title = "Test Display", },
-//	{ .key = 'Q', .title = "Shutdown", .handler = shutdown },
 };
 
 const CliMenu climenu_main = {
@@ -392,38 +378,3 @@ const CliMenu climenu_main = {
 	.entry_num = sizeof(entry_tab) / sizeof(CliMenuEntry),
 };
 
-#if 0 // Legacy code
-
-static
-void test_button_hdr(intptr_t button) {
-    switch(button) {
-    case LEFT_BUTTON:
-    	fprintf(fio, "Left button clicked.\n");
-    	break;
-
-    case RIGHT_BUTTON:
-    	fprintf(fio, "Right button clicked.\n");
-    	break;
-
-    case UP_BUTTON:
-    	fprintf(fio, "Up button clicked.\n");
-    	break;
-
-    case DOWN_BUTTON:
-    	fprintf(fio, "Down button clicked.\n");
-    	break;
-
-    case ENTER_BUTTON:
-    	fprintf(fio, "Enter button clicked.\n");
-    	break;
-
-    case BACK_BUTTON:
-    	fprintf(fio, "Back button clicked.\n");
-    	break;
-
-    default:
-    	assert(0);
-    }
-}
-
-#endif

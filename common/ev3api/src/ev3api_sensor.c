@@ -51,8 +51,7 @@ void uart_sensor_fetch_data(sensor_port_t port, uint8_t mode, void *dest, uint32
 
 	// Switch mode
 //	uart_sensor_switch_mode(port, mode);
-	ercd = uart_sensor_config(port, mode);
-	assert(ercd == E_OK);
+	SVC_PERROR(ercd = uart_sensor_config(port, mode));
 //	while(!uart_sensor_data_ready(port));
 	while(!((*pUartSensorData[port].status) & UART_DATA_READY)); // TODO: time out
 
@@ -72,8 +71,8 @@ void _initialize_ev3api_sensor() {
 		sensors[EV3_PORT_3]   = NONE_SENSOR;
 		sensors[EV3_PORT_4]   = NONE_SENSOR;
 		brickinfo_t brickinfo;
-		ER ercd = fetch_brick_info(&brickinfo);
-		assert(ercd == E_OK);
+		ER ercd;
+        SVC_PERROR(ercd = fetch_brick_info(&brickinfo));
 		pUartSensorData = brickinfo.uart_sensors;
 		pAnalogSensorData = brickinfo.analog_sensors;
 		pI2CSensorData = brickinfo.i2c_sensors;
@@ -98,8 +97,7 @@ ER ev3_sensor_config(sensor_port_t port, sensor_type_t type) {
 
 	case TOUCH_SENSOR: {
         // It seems analog sensor can't work correctly in I2C mode
-    	ercd = uart_sensor_config(port, 0);
-    	assert(ercd == E_OK);
+        SVC_PERROR(ercd = uart_sensor_config(port, 0));
         /* Busy wait 10ms to ensure that sensor value is updated */
         SYSTIM start, now;
         get_tim(&start);
@@ -112,8 +110,7 @@ ER ev3_sensor_config(sensor_port_t port, sensor_type_t type) {
     case COLOR_SENSOR:
     case INFRARED_SENSOR:
         // Configure UART sensor
-    	ercd = uart_sensor_config(port, 0);
-    	assert(ercd == E_OK);
+        SVC_PERROR(ercd = uart_sensor_config(port, 0));
         // Wait UART sensor to finish initialization
 //    	while(!uart_sensor_data_ready(port));
 		break;
@@ -121,8 +118,7 @@ ER ev3_sensor_config(sensor_port_t port, sensor_type_t type) {
     case HT_NXT_ACCEL_SENSOR:
     case HT_NXT_COLOR_SENSOR:
     case NXT_TEMP_SENSOR:
-    	ercd = uart_sensor_config(port, 0xFF /* TODO:MODE_NONE_UART_SENSOR */);
-    	assert(ercd == E_OK);
+        SVC_PERROR(ercd = uart_sensor_config(port, 0xFF /* TODO:MODE_NONE_UART_SENSOR */));
         break;
 
 	default:
@@ -451,8 +447,7 @@ bool_t ht_nxt_accel_sensor_measure(sensor_port_t port, int16_t axes[3]) {
 		axes[i] = ((axes[i] < 128 ? axes[i] : axes[i] - 256) << 2) | (pI2CSensorData[port].raw[i + 3] & 0x3);
 	}
 
-	ercd = start_i2c_transaction(port, 0x1, "\x42", 1, 6);
-	assert(ercd == E_OK);
+	SVC_PERROR(ercd = start_i2c_transaction(port, 0x1, "\x42", 1, 6));
 
 	return true;
 
@@ -470,8 +465,7 @@ bool_t ht_nxt_color_sensor_measure_color(sensor_port_t port, uint8_t *color) {
 
     *color = pI2CSensorData[port].raw[0];
 
-	ercd = start_i2c_transaction(port, 0x1, "\x42", 1, 1);
-	assert(ercd == E_OK);
+	SVC_PERROR(ercd = start_i2c_transaction(port, 0x1, "\x42", 1, 1));
 
 	return true;
 
@@ -491,8 +485,7 @@ bool_t ht_nxt_color_sensor_measure_rgb(sensor_port_t port, rgb_raw_t *val) {
     val->g = pI2CSensorData[port].raw[1];
     val->b = pI2CSensorData[port].raw[2];
 
-	ercd = start_i2c_transaction(port, 0x1, "\x43", 1, 3);
-	assert(ercd == E_OK);
+	SVC_PERROR(ercd = start_i2c_transaction(port, 0x1, "\x43", 1, 3));
 
 	return true;
 
@@ -513,8 +506,7 @@ bool_t nxt_temp_sensor_measure(sensor_port_t port, float *temp) {
     raw = ((raw < 128 ? raw : raw - 256) << 4) | ((pI2CSensorData[port].raw[1] >> 4) & 0xF);
     *temp = raw * 0.0625f;
 
-	ercd = start_i2c_transaction(port, 0x4c, "\x0", 1, 2);
-	assert(ercd == E_OK);
+	SVC_PERROR(ercd = start_i2c_transaction(port, 0x4c, "\x0", 1, 2));
 
 	return true;
 

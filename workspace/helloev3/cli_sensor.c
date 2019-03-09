@@ -171,7 +171,7 @@ void test_ultrasonic_sensor(sensor_port_t port) {
 	                ev3_sensor_config(port, ULTRASONIC_SENSOR);
 				    ev3_ultrasonic_sensor_get_distance(port); // Wait first data
 		        }
-				tslp_tsk(10);
+				tslp_tsk(10U * 1000U);
 			});
 			break;
 		case US_LISTEN:
@@ -179,7 +179,7 @@ void test_ultrasonic_sensor(sensor_port_t port) {
 				bool_t val = ev3_ultrasonic_sensor_listen(port);
 				sprintf(msgbuf, "Signal: %d", val);
 				ev3_lcd_draw_string(msgbuf, 0, MENU_FONT_HEIGHT * 3);
-				tslp_tsk(10);
+				tslp_tsk(10U * 1000U);
 			});
 			break;
 		default:
@@ -267,7 +267,7 @@ void test_infrared_sensor(sensor_port_t port) {
 //				fio_clear_line();
 				sprintf(msgbuf, "Distance: %-3d %%", val);
 				ev3_lcd_draw_string(msgbuf, 0, MENU_FONT_HEIGHT * 3);
-				tslp_tsk(10);
+				tslp_tsk(10U * 1000U);
 			});
 			break;
 		case IR_SEEK:
@@ -281,7 +281,7 @@ void test_infrared_sensor(sensor_port_t port) {
 					sprintf(msgbuf, "%d H:%d D:%d      ", c + 1, h, d);
 					ev3_lcd_draw_string(msgbuf, 0, MENU_FONT_HEIGHT * (3 + c));
 				}
-				tslp_tsk(10);
+				tslp_tsk(10U * 1000U);
 			});
 			break;
 		case IR_REMOTE:
@@ -306,7 +306,7 @@ void test_infrared_sensor(sensor_port_t port) {
 					msgbuf[0] = '1' + c;
 					ev3_lcd_draw_string(msgbuf, c * 45 + 16, top + 32);
 				}
-				tslp_tsk(10);
+				tslp_tsk(10U * 1000U);
 			});
 			break;
 		default:
@@ -371,7 +371,7 @@ void test_gyro_sensor(sensor_port_t port) {
 //				fio_clear_line();
 				sprintf(msgbuf, "Angle: %-4d deg", val);
 				ev3_lcd_draw_string(msgbuf, 0, MENU_FONT_HEIGHT * 3);
-				tslp_tsk(10);
+				tslp_tsk(10U * 1000U);
 			});
 			break;
 		case GYRO_RATE:
@@ -381,7 +381,7 @@ void test_gyro_sensor(sensor_port_t port) {
 //				fio_clear_line();
 				sprintf(msgbuf, "Rate: %-4d deg/s", val);
 				ev3_lcd_draw_string(msgbuf, 0, MENU_FONT_HEIGHT * 3);
-				tslp_tsk(10);
+				tslp_tsk(10U * 1000U);
 			});
 			break;
 		default:
@@ -406,7 +406,7 @@ void test_touch_sensor(sensor_port_t port) {
 	//				fio_clear_line();
 		sprintf(msgbuf, "Pressed: %d", val);
 		ev3_lcd_draw_string(msgbuf, 0, MENU_FONT_HEIGHT * 3);
-		tslp_tsk(10);
+		tslp_tsk(10U * 1000U);
 	});
 }
 
@@ -478,7 +478,7 @@ void test_color_sensor(sensor_port_t port) {
 //				fio_clear_line();
 				sprintf(msgbuf, "Reflect: %-4d", val);
 				ev3_lcd_draw_string(msgbuf, 0, MENU_FONT_HEIGHT * 3);
-				tslp_tsk(10);
+		        tslp_tsk(10U * 1000U);
 			});
 			break;
 		case COL_AMBIENT:
@@ -487,7 +487,7 @@ void test_color_sensor(sensor_port_t port) {
 //				fio_clear_line();
 				sprintf(msgbuf, "Ambient: %-4d", val);
 				ev3_lcd_draw_string(msgbuf, 0, MENU_FONT_HEIGHT * 3);
-				tslp_tsk(10);
+		        tslp_tsk(10U * 1000U);
 			});
 			break;
 		case COL_COLOR:
@@ -496,7 +496,7 @@ void test_color_sensor(sensor_port_t port) {
 //				fio_clear_line();
 				sprintf(msgbuf, "Color: %-7s", colorstr[val]);
 				ev3_lcd_draw_string(msgbuf, 0, MENU_FONT_HEIGHT * 3);
-				tslp_tsk(10);
+		        tslp_tsk(10U * 1000U);
 			});
 			break;
 		case COL_RGBRAW:
@@ -510,7 +510,7 @@ void test_color_sensor(sensor_port_t port) {
 				ev3_lcd_draw_string(msgbuf, 0, MENU_FONT_HEIGHT * 4);
 				sprintf(msgbuf, "Blue:  %-4d", val.b);
 				ev3_lcd_draw_string(msgbuf, 0, MENU_FONT_HEIGHT * 5);
-				tslp_tsk(10);
+		        tslp_tsk(10U * 1000U);
 			});
 			break;
 		default:
@@ -541,7 +541,7 @@ void test_ht_nxt_accel_sensor(sensor_port_t port) {
 		ev3_lcd_draw_string(msgbuf, 0, MENU_FONT_HEIGHT * 4);
 		sprintf(msgbuf, "Z: %-4d", axes[2]);
 		ev3_lcd_draw_string(msgbuf, 0, MENU_FONT_HEIGHT * 5);
-		tslp_tsk(10);
+		tslp_tsk(10U * 1000U);
 	});
 }
 
@@ -591,7 +591,7 @@ void test_ht_nxt_color_sensor(sensor_port_t port) {
 		        assert(val);
 				sprintf(msgbuf, "Color: %d", color);
 				ev3_lcd_draw_string(msgbuf, 0, MENU_FONT_HEIGHT * 3);
-				tslp_tsk(10);
+		        tslp_tsk(10U * 1000U);
 			});
 			break;
 		case COL_RGBRAW:
@@ -604,7 +604,7 @@ void test_ht_nxt_color_sensor(sensor_port_t port) {
 				ev3_lcd_draw_string(msgbuf, 0, MENU_FONT_HEIGHT * 4);
 				sprintf(msgbuf, "Blue:  %-4d", rgb.b);
 				ev3_lcd_draw_string(msgbuf, 0, MENU_FONT_HEIGHT * 5);
-				tslp_tsk(10);
+		        tslp_tsk(10U * 1000U);
 			});
 			break;
 		default:
@@ -631,7 +631,7 @@ void test_nxt_temp_sensor(sensor_port_t port) {
 		assert(val);
 		sprintf(msgbuf, "Temp.: %8.4f", temp);
 		ev3_lcd_draw_string(msgbuf, 0, MENU_FONT_HEIGHT * 3);
-		tslp_tsk(10);
+		tslp_tsk(10U * 1000U);
 	});
 }
 
@@ -675,8 +675,6 @@ void test_sensor(intptr_t unused) {
 		sprintf(msgbuf, "%s is not connected.", cme_port->title);
 		show_message_box("No Sensor", msgbuf);
 		}
-//		fprintf(fio, "%s is not connected.\n", cme_port->title);
-//		tslp_tsk(500);
 		break;
 
 	default:

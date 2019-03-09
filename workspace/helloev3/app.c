@@ -98,25 +98,6 @@ const CliMenuEntry* select_menu_entry(const CliMenu *cm, int offset_x, int offse
 
 	assert(current >= 0 && current < cm->entry_num);
 	return &cm->entry_tab[current];
-
-#if 0
-    fprintf(fio, "Enter an option: ");
-
-    unsigned char c = fgetc(fio);
-    for(SIZE i = 0; i < cm->entry_num; ++i) {
-        if(toupper(cm->entry_tab[i].key) == toupper(c)) {
-        	fputc(c, fio);
-        	fputc('\n', fio);
-            return &cm->entry_tab[i];
-        }
-    }
-
-    // Invalid key entered
-    fio_clear_line();
-    fprintf(fio, "Option '%c' is invalid, please enter again. ", c);
-    tslp_tsk(500);
-    return NULL;
-#endif
 }
 
 
@@ -171,92 +152,6 @@ void main_task(intptr_t unused) {
 			cme->handler(cme->exinf);
 		}
 	}
-
-
-//    // Register button handlers
-//    ev3_set_on_button_clicked(BACK_BUTTON, button_clicked_handler, BACK_BUTTON);
-//    ev3_set_on_button_clicked(ENTER_BUTTON, button_clicked_handler, ENTER_BUTTON);
-//    ev3_set_on_button_clicked(LEFT_BUTTON, button_clicked_handler, LEFT_BUTTON);
-//
-//    // Configure motors
-//    MotorType motors[TNUM_MOTOR_PORT] = {NONE_MOTOR, NONE_MOTOR, NONE_MOTOR, NONE_MOTOR};
-//    motors[left_motor]  = LARGE_MOTOR;
-//    motors[right_motor] = LARGE_MOTOR;
-//    ev3_motor_config(motors[PortA], motors[PortB], motors[PortC], motors[PortD]);
-//
-//    // Configure sensors
-//    SensorType sensors[TNUM_SENSOR_PORT] = {NONE_SENSOR, NONE_SENSOR, NONE_SENSOR, NONE_SENSOR};
-//    sensors[gyro_sensor] = GYRO_SENSOR;
-//    ev3_sensor_config(sensors[Port1], sensors[Port2], sensors[Port3], sensors[Port4]);
-//
-//    // Start task for self-balancing
-//    act_tsk(BALANCE_TASK);
-//
-//    // Open Bluetooth file
-//    bt = fdopen(SIO_BT_FILENO, "a+");
-//    assert(bt != NULL);
-//    setbuf(STDIN_FILENO, NULL); /* IMPORTANT! */
-//
-//    // Start task for printing message while idle
-//	act_tsk(IDLE_TASK);
-//
-//    while(1) {
-//    	uint8_t c = fgetc(bt);
-//    	sus_tsk(IDLE_TASK);
-//    	switch(c) {
-//    	case 'w':
-//    		if(motor_control_drive < 0)
-//    			motor_control_drive = 0;
-//    		else
-//    			motor_control_drive += 10;
-//    		fprintf(bt, "motor_control_drive: %d\n", motor_control_drive);
-//    		break;
-//
-//    	case 's':
-//    		if(motor_control_drive > 0)
-//    			motor_control_drive = 0;
-//    		else
-//    			motor_control_drive -= 10;
-//    		fprintf(bt, "motor_control_drive: %d\n", motor_control_drive);
-//    		break;
-//
-//    	case 'a':
-//    		if(motor_control_steer < 0)
-//    			motor_control_steer = 0;
-//    		else
-//    			motor_control_steer += 10;
-//    		fprintf(bt, "motor_control_steer: %d\n", motor_control_steer);
-//    		break;
-//
-//    	case 'd':
-//    		if(motor_control_steer > 0)
-//    			motor_control_steer = 0;
-//    		else
-//    			motor_control_steer -= 10;
-//    		fprintf(bt, "motor_control_steer: %d\n", motor_control_steer);
-//    		break;
-//
-//    	case 'h':
-//    		fprintf(bt, "==========================\n");
-//    		fprintf(bt, "Usage:\n");
-//    		fprintf(bt, "Press 'w' to speed up\n");
-//    		fprintf(bt, "Press 's' to speed down\n");
-//    		fprintf(bt, "Press 'a' to turn left\n");
-//    		fprintf(bt, "Press 'd' to turn right\n");
-//    		fprintf(bt, "Press 'i' for idle task\n");
-//    		fprintf(bt, "Press 'h' for this message\n");
-//    		fprintf(bt, "==========================\n");
-//    		break;
-//
-//    	case 'i':
-//    		fprintf(bt, "Idle task started.\n");
-//    		rsm_tsk(IDLE_TASK);
-//    		break;
-//
-//    	default:
-//    		fprintf(bt, "Unknown key '%c' pressed.\n", c);
-//    	}
-//    }
 }
 
 void show_message_box(const char *title, const char *msg) {
