@@ -17,6 +17,7 @@ ER load_application(const void *mod_data, uint32_t mod_data_sz) {
 	    dmloader_ref_ldm(1, &rldm);
         platform_add_segment_information("text", (uintptr_t)rldm.text_mempool, rldm.text_mempool_size);
         platform_add_segment_information("data", (uintptr_t)rldm.data_mempool, rldm.data_mempool_size);
+        has_inited = true;
     }
 
 	ER ercd;
