@@ -3,7 +3,6 @@
 #include <unistd.h>
 #include <ctype.h>
 #include <string.h>
-#include "spp_master_test_api.h"
 
 int32_t default_menu_font_width;
 int32_t default_menu_font_height;
@@ -54,16 +53,17 @@ void main_task(intptr_t unused) {
 	ev3_lcd_draw_string("Remote Port A: 0", offset_x, offset_y + MENU_FONT_HEIGHT * 2);
 
 	// Draw status
-    bt_slave = spp_master_test_open_file();
+    bt_slave = ev3_serial_open_file(EV3_SERIAL_SPP_MASTER);
     act_tsk(BT_TASK);
 	char lcdstr[100];
-    bool_t connected = false;
     int power10 = 0;
 	while (1) {
         // Connect to slave
-        while (!spp_master_test_is_connected()) {
-		    ev3_lcd_draw_string("N", offset_x + strlen("Connected: ") * MENU_FONT_WIDTH, offset_y + MENU_FONT_HEIGHT * 0);
-            spp_master_test_connect_ev3(remote_addr, remote_pincode);
+		ev3_lcd_draw_string("N", offset_x + strlen("Connected: ") * MENU_FONT_WIDTH, offset_y + MENU_FONT_HEIGHT * 0);
+        SVC_PERROR(ev3_spp_master_reset());
+        SVC_PERROR(ev3_spp_master_connect(remote_addr, remote_pincode, "Serial Port"));
+        while (!ev3_spp_master_is_connected()) {
+            dly_tsk(100U * 1000U);
         }
 		ev3_lcd_draw_string("Y", offset_x + strlen("Connected: ") * MENU_FONT_WIDTH, offset_y + MENU_FONT_HEIGHT * 0);
 

@@ -181,6 +181,7 @@ typedef enum {
     EV3_SERIAL_DEFAULT = 0, //!< \~English Default serial port (port for log task)     \~Japanese デフォルトのシリアルポート（ログタスク用ポート）
     EV3_SERIAL_UART = 1,	//!< \~English UART (Sensor port 1) \~Japanese UARTポート（センサポート1）
     EV3_SERIAL_BT = 2,	    //!< \~English Bluetooth SPP        \~Japanese Bluetooth仮想シリアルポート
+    EV3_SERIAL_SPP_MASTER = 3,	    //!< \~English Bluetooth SPP Master       \~Japanese Bluetooth SPPマスタの仮想シリアルポート
 } serial_port_t;
 
 /**
@@ -210,6 +211,58 @@ FILE* ev3_serial_open_file(serial_port_t port);
  * \retval false     接続切れ．
  */
 bool_t ev3_bluetooth_is_connected();
+
+/**
+ * \~English
+ * \brief            Type for Bluetooth MAC address
+ *
+ * \~Japanese
+ * \brief            BluetoothのMACアドレスを格納する型
+ */
+typedef uint8_t ev3_bt_addr_t[6];
+
+/**
+ * \~English
+ * \brief            Reset the SPP master functionality. Open channel will be closed.
+ * \retval E_OK      SPP master functionality has been reset to IDLE.
+ *
+ * \~Japanese
+ * \brief            既存の通信チャンネルをクローズして、SPPマスタ機能をリセットする。
+ * \retval E_OK      アイドル状態にリセット完了
+ */
+extern ER ev3_spp_master_reset();
+
+/**
+ * \~English
+ * \brief            Start to connect to a SPP service.
+ * \param addr MAC address of the Bluetooth device to be connected
+ * \param pin  PIN code
+ * \param service Prefix of the SPP service name
+ * \retval E_OK      Connecting is started.
+ * \retval E_CTX     Connecting cannot be started because SPP master functionality is not IDLE.
+ *
+ * \~Japanese
+ * \brief            SPPサービスへの接続を開始する。
+ * \param addr 接続先のBluetoothデバイスのMACアドレス
+ * \param pin  PINコード
+ * \param service 接続したいSPPサービスの名前のプレフィックス
+ * \retval E_OK      正常に開始した。
+ * \retval E_CTX     SPPマスタ機能はアイドル状態でないため、開始できなかった。
+ */
+extern ER ev3_spp_master_connect(ev3_bt_addr_t addr, const char *pin, const char *service);
+
+/**
+ * \~English
+ * \brief            Whether the SPP master has connected to the remote service.
+ * \retval true      Connected. It can communicate with the Bluetooth virtual serial port.
+ * \retval false     Unconnected.
+ *
+ * \~Japanese
+ * \brief            SPPマスタ機能とリモートサービスの接続状態をチェックする
+ * \retval true      接続済み．Bluetooth仮想シリアルポートで通信できる．
+ * \retval false     接続切れ．
+ */
+bool_t ev3_spp_master_is_connected();
 
 /**
  * @} // End of group

@@ -104,6 +104,8 @@ FILE* ev3_serial_open_file(serial_port_t port) {
 		fd = SIO_UART_FILENO;
 	else if (port == EV3_SERIAL_BT)
 		fd = SIO_BT_FILENO;
+	else if (port == EV3_SERIAL_SPP_MASTER)
+        fd = SIO_PORT_SPP_MASTER_TEST_FILENO;
 	else {
 		API_ERROR("Invalid port id %d.", port);
 		return NULL;
@@ -155,3 +157,18 @@ bool_t ev3_bluetooth_is_connected() {
 	ER ercd = serial_ref_por(SIO_PORT_BT, &rpor);
 	return ercd == E_OK;
 }
+
+ER ev3_spp_master_reset() {
+    return spp_master_reset();
+}
+
+ER ev3_spp_master_connect(ev3_bt_addr_t addr, const char *pin, const char *service) {
+    return spp_master_connect(addr, pin, service);
+}
+
+bool_t ev3_spp_master_is_connected() {
+	T_SERIAL_RPOR rpor;
+	ER ercd = serial_ref_por(SIO_PORT_SPP_MASTER_TEST, &rpor);
+	return ercd == E_OK;
+}
+
