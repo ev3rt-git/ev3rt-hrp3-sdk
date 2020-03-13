@@ -52,14 +52,6 @@ bool_t ev3_button_is_pressed(button_t button) {
 	return _global_ev3_brick_info.button_pressed[brickbtn];
 }
 
-ER ev3_sta_cyc(ID ev3cycid) {
-	return _ev3_sta_cyc(ev3cycid);
-}
-
-ER ev3_stp_cyc(ID ev3cycid) {
-	return _ev3_stp_cyc(ev3cycid);
-}
-
 #if 0 // Legacy code
 /**
  * Button
